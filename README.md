@@ -1,20 +1,21 @@
-# 📿 Smart Bracelet – IoT Scan Device
+# 📿 Smart Bracelet – IoT Scan System
 
-A WiFi-enabled Smart Bracelet prototype built using an ESP32 that sends product scan data to a backend server when a button is pressed.
+A WiFi-enabled Smart Bracelet prototype built using an ESP32 and a FastAPI backend server.
 
-This project demonstrates a simple IoT wearable device capable of communicating with a backend system using HTTP POST requests.
+The bracelet sends scan data to a backend server whenever a button is pressed. This project demonstrates a simple IoT wearable device that communicates with a backend system using HTTP POST requests.
 
-The bracelet works as a wireless scan trigger, making it suitable for smart retail, attendance tracking, and inventory systems.
+The backend server is implemented using FastAPI and runs locally on the same WiFi network as the ESP32.
 
 ---
 
 ## 🚀 Features
 
-- WiFi connectivity using ESP32
+- ESP32 WiFi connectivity
 - Button-triggered scan event
+- FastAPI backend server
 - HTTP POST communication
 - JSON data transmission
-- Real-time server interaction
+- Real-time server response
 - Lightweight wearable prototype
 
 ---
@@ -25,127 +26,144 @@ The bracelet works as a wireless scan trigger, making it suitable for smart reta
 - Push Button
 - Jumper Wires
 - Breadboard (optional)
-- Battery Pack (optional for wearable use)
+- Battery Pack (optional)
 
 ---
 
 ## ⚙️ Pin Configuration
 
-| Component | ESP32 Pin |
-|----------|-----------|
-| Button   | GPIO 18   |
+Component : ESP32 Pin
+
+Button : GPIO 18
 
 The button uses INPUT_PULLUP configuration:
 
-- Not Pressed → HIGH  
-- Pressed → LOW
-
----
-
-## 📡 How It Works
-
-1. ESP32 connects to WiFi.
-2. The device continuously monitors the button state.
-3. When the button is pressed:
-   - A scan event is triggered
-   - JSON data is generated
-   - HTTP POST request is sent to the backend server
-4. Server response is displayed on the Serial Monitor.
-
----
-
-## 🧠 Data Format Sent
-
-Example JSON payload:
-
-{
-  "id": "1",
-  "product": "milk"
-}
-
----
-
-## 🌐 Server Endpoint
-
-Example server URL:
-
-http://192.168.137.58:8000/test/scan
-
-You can modify this in the code:
-
-const char* serverURL = "YOUR_SERVER_URL";
-
----
-
-## 📶 WiFi Configuration
-
-Enter your WiFi credentials in the code:
-
-const char* ssid = "YOUR_WIFI_NAME";
-const char* password = "YOUR_WIFI_PASSWORD";
-
----
-
-## 🔧 Required Libraries
-
-The following libraries are included with the ESP32 package:
-
-- WiFi.h
-- HTTPClient.h
-
----
-
-## 🔌 Installation
-
-1. Install ESP32 Board Support
-
-Open Arduino IDE
-
-Tools → Board → Boards Manager
-
-Search and install:
-
-ESP32 by Espressif Systems
-
----
-
-2. Upload Code
-
-1. Connect ESP32 via USB
-2. Open project in Arduino IDE
-3. Select Board → ESP32 Dev Module
-4. Upload the code
-
----
-
-## 📟 Serial Monitor Output
-
-Example output:
-
-Connecting to WiFi...
-HTTP Response code: 200
-Server response:
-Scan successful
-
-Baud Rate: 115200
+Not Pressed → HIGH  
+Pressed → LOW
 
 ---
 
 ## 📁 Project Structure
 
 smart-bracelet/
- ├── smart_bracelet.ino
+
+ ├── smart_bracelet.ino  
+ ├── server.py  
  └── README.md
+
+---
+
+## 🔧 ESP32 Firmware
+
+The ESP32 program:
+
+- Connects to WiFi
+- Monitors the button state
+- Sends JSON data to the server
+- Prints the server response to Serial Monitor
+
+Example JSON data sent:
+
+{
+  "id": "1",
+  "product": "milk"
+}
+
+Server address used in the code:
+
+const char* serverURL = "http://YOUR_IP_ADDRESS:8000/test/scan";
+
+Replace YOUR_IP_ADDRESS with the IP address of the computer running the FastAPI server.
+
+Enter WiFi credentials in the code:
+
+const char* ssid = "YOUR_WIFI_NAME";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+---
+
+## 🌐 FastAPI Backend Server
+
+The backend server is written using FastAPI and receives scan data from the Smart Bracelet.
+
+Create a file named server.py and add the following code:
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class ScanData(BaseModel):
+    id: str
+    product: str
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "Smart Bracelet Server Running"
+    }
+
+
+@app.post("/test/scan")
+def scan(data: ScanData):
+
+    print("Scan Received")
+    print("ID:", data.id)
+    print("Product:", data.product)
+
+    return {
+        "status": "success",
+        "message": "Scan received",
+        "id": data.id,
+        "product": data.product
+    }
+
+---
+
+## 🧪 Running the Server
+
+Install dependencies:
+
+pip install fastapi uvicorn
+
+Start the server:
+
+uvicorn server:app --host 0.0.0.0 --port 8000
+
+Make sure the ESP32 and the server computer are connected to the same WiFi network.
+
+---
+
+## 📡 How It Works
+
+1. ESP32 connects to WiFi
+2. Device monitors button input
+3. Button press triggers scan event
+4. JSON data is sent to FastAPI server
+5. Server processes request
+6. Response is returned to ESP32
+
+---
+
+## 📟 Serial Monitor Output Example
+
+Connecting to WiFi...
+HTTP Response code: 200
+Server response:
+{"status":"success","message":"Scan received","id":"1","product":"milk"}
+
+Baud Rate: 115200
 
 ---
 
 ## 🔮 Future Improvements
 
-- Battery-powered wearable design
+- Battery powered bracelet
+- RFID or NFC integration
 - Mobile app integration
-- Secure HTTPS communication
-- RFID or NFC support
-- Cloud backend integration
+- HTTPS support
+- Cloud database
 - OLED display
 - Vibration feedback
 
@@ -155,7 +173,6 @@ smart-bracelet/
 
 - Smart retail systems
 - Inventory tracking
-- Smart attendance systems
 - IoT wearable devices
 - Access control
 
