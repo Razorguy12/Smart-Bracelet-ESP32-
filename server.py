@@ -1,31 +1,10 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
 
 app = FastAPI()
 
-
-class ScanData(BaseModel):
-    id: str
-    product: str
-
-
-@app.get("/")
-def home():
-    return {
-        "message": "Smart Bracelet Server Running"
-    }
-
-
-@app.post("/test/scan")
-def scan(data: ScanData):
-
-    print("Scan Received")
-    print("ID:", data.id)
-    print("Product:", data.product)
-
-    return {
-        "status": "success",
-        "message": "Scan received",
-        "id": data.id,
-        "product": data.product
-    }
+@app.post("/scan")
+async def scan_data(request: Request):
+    body = await request.body()
+    data = body.decode("utf-8")
+    print("Received:", data)
+    return {"status": "received", "data": data}
